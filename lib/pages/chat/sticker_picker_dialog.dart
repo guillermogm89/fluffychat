@@ -474,11 +474,7 @@ class _StickerPackNavigationBar extends StatelessWidget {
               ),
             );
           } else {
-            packIcon = Avatar(
-              name: packName,
-              client: room.client,
-              size: 40,
-            );
+            packIcon = Avatar(name: packName, client: room.client, size: 40);
           }
 
           return Tooltip(
