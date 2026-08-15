@@ -10,7 +10,6 @@ import 'package:fluffychat/utils/url_launcher.dart';
 import 'package:fluffychat/widgets/matrix.dart';
 import 'package:fluffychat/widgets/mxc_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:matrix/matrix.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -80,9 +79,9 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
 
     final viewportTop = viewportRenderObject.localToGlobal(Offset.zero).dy + 8;
     int? closestAtOrAbove;
-    double closestAtOrAboveTop = double.negativeInfinity;
+    var closestAtOrAboveTop = double.negativeInfinity;
     int? closestBelow;
-    double closestBelowTop = double.infinity;
+    var closestBelowTop = double.infinity;
 
     for (final entry in _scrollController.tagMap.entries) {
       final renderObject = entry.value.context.findRenderObject();
@@ -97,7 +96,8 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
       }
     }
 
-    final nextActivePackIndex = closestAtOrAbove ?? (closestBelow == null ? null : -1);
+    final nextActivePackIndex =
+        closestAtOrAbove ?? (closestBelow == null ? null : -1);
     if (nextActivePackIndex != null &&
         nextActivePackIndex != _activePackIndex) {
       setState(() => _activePackIndex = nextActivePackIndex);
@@ -170,8 +170,9 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
           final slug = packSlugs[packIndex];
           final pack = stickerPacks[slug]!;
           final packName = pack.pack.displayName ?? slug;
-          final firstSticker =
-              pack.images.isEmpty ? null : pack.images.values.first;
+          final firstSticker = pack.images.isEmpty
+              ? null
+              : pack.images.values.first;
           final selected = activePackIndex == packIndex;
 
           final Widget packIcon;
@@ -268,7 +269,8 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
                               width: 72,
                               child: Tooltip(
                                 message:
-                                    recentSticker.image.body ?? recentSticker.key,
+                                    recentSticker.image.body ??
+                                    recentSticker.key,
                                 child: InkWell(
                                   radius: AppConfig.borderRadius,
                                   key: ValueKey(
@@ -350,8 +352,10 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
                       itemCount: packSlugs.length,
                       itemBuilder: (BuildContext context, int packIndex) {
                         final pack = stickerPacks[packSlugs[packIndex]]!;
-                        final filteredImagePackImageEntried =
-                            pack.images.entries.toList();
+                        final filteredImagePackImageEntried = pack
+                            .images
+                            .entries
+                            .toList();
                         if (searchFilter?.isNotEmpty ?? false) {
                           filteredImagePackImageEntried.removeWhere(
                             (e) =>
@@ -405,12 +409,16 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
                                       physics:
                                           const NeverScrollableScrollPhysics(),
                                       itemBuilder:
-                                          (BuildContext context, int imageIndex) {
-                                            final image = pack.images[
-                                                imageKeys[imageIndex]]!;
+                                          (
+                                            BuildContext context,
+                                            int imageIndex,
+                                          ) {
+                                            final image = pack
+                                                .images[imageKeys[imageIndex]]!;
                                             return Tooltip(
                                               message:
-                                                  image.body ?? imageKeys[imageIndex],
+                                                  image.body ??
+                                                  imageKeys[imageIndex],
                                               child: InkWell(
                                                 radius: AppConfig.borderRadius,
                                                 key: ValueKey(
