@@ -132,90 +132,6 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
     );
   }
 
-  Widget _buildPackNavigationBar(
-    ThemeData theme,
-    Map<String, ImagePackContent> stickerPacks,
-    List<String> packSlugs,
-    bool hasRecents,
-  ) {
-    final activePackIndex =
-        _activePackIndex ?? (hasRecents ? -1 : (packSlugs.isEmpty ? -1 : 0));
-
-    return Container(
-      height: 64,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
-      ),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        scrollDirection: Axis.horizontal,
-        itemCount: packSlugs.length + 1,
-        itemBuilder: (context, navigationIndex) {
-          if (navigationIndex == 0) {
-            final selected = activePackIndex == -1;
-            return _StickerPackNavigationButton(
-              selected: selected,
-              onTap: _scrollToRecents,
-              child: Icon(
-                Icons.history,
-                color: selected
-                    ? theme.colorScheme.onSecondaryContainer
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
-            );
-          }
-
-          final packIndex = navigationIndex - 1;
-          final slug = packSlugs[packIndex];
-          final pack = stickerPacks[slug]!;
-          final packName = pack.pack.displayName ?? slug;
-          final firstSticker = pack.images.isEmpty
-              ? null
-              : pack.images.values.first;
-          final selected = activePackIndex == packIndex;
-
-          final Widget packIcon;
-          if (pack.pack.avatarUrl != null) {
-            packIcon = Avatar(
-              mxContent: pack.pack.avatarUrl,
-              name: packName,
-              client: widget.room.client,
-              size: 40,
-            );
-          } else if (firstSticker != null) {
-            packIcon = ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: MxcImage(
-                uri: firstSticker.url,
-                fit: BoxFit.contain,
-                width: 40,
-                height: 40,
-                animated: false,
-                isThumbnail: true,
-              ),
-            );
-          } else {
-            packIcon = Avatar(
-              name: packName,
-              client: widget.room.client,
-              size: 40,
-            );
-          }
-
-          return Tooltip(
-            message: packName,
-            child: _StickerPackNavigationButton(
-              selected: selected,
-              onTap: () => _scrollToPack(packIndex),
-              child: packIcon,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -258,7 +174,10 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
                       child: SizedBox(
                         height: 88,
                         child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           scrollDirection: Axis.horizontal,
                           itemCount: recentStickers.length,
                           separatorBuilder: (context, index) =>
@@ -452,11 +371,14 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
               ),
             ),
             if (packSlugs.isNotEmpty)
-              _buildPackNavigationBar(
-                theme,
-                stickerPacks,
-                packSlugs,
-                recentStickers.isNotEmpty,
+              _StickerPackNavigationBar(
+                room: widget.room,
+                stickerPacks: stickerPacks,
+                packSlugs: packSlugs,
+                activePackIndex: _activePackIndex,
+                hasRecents: recentStickers.isNotEmpty,
+                onScrollToRecents: _scrollToRecents,
+                onScrollToPack: _scrollToPack,
               ),
           ],
         ),
@@ -470,6 +392,107 @@ class _StickerEntry {
   final ImagePackImageContent image;
 
   const _StickerEntry({required this.key, required this.image});
+}
+
+class _StickerPackNavigationBar extends StatelessWidget {
+  final Room room;
+  final Map<String, ImagePackContent> stickerPacks;
+  final List<String> packSlugs;
+  final int? activePackIndex;
+  final bool hasRecents;
+  final VoidCallback onScrollToRecents;
+  final ValueChanged<int> onScrollToPack;
+
+  const _StickerPackNavigationBar({
+    required this.room,
+    required this.stickerPacks,
+    required this.packSlugs,
+    required this.activePackIndex,
+    required this.hasRecents,
+    required this.onScrollToRecents,
+    required this.onScrollToPack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final selectedPackIndex =
+        activePackIndex ?? (hasRecents ? -1 : (packSlugs.isEmpty ? -1 : 0));
+
+    return Container(
+      height: 64,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(top: BorderSide(color: theme.dividerColor)),
+      ),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        scrollDirection: Axis.horizontal,
+        itemCount: packSlugs.length + 1,
+        itemBuilder: (context, navigationIndex) {
+          if (navigationIndex == 0) {
+            final selected = selectedPackIndex == -1;
+            return _StickerPackNavigationButton(
+              selected: selected,
+              onTap: onScrollToRecents,
+              child: Icon(
+                Icons.history,
+                color: selected
+                    ? theme.colorScheme.onSecondaryContainer
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+            );
+          }
+
+          final packIndex = navigationIndex - 1;
+          final slug = packSlugs[packIndex];
+          final pack = stickerPacks[slug]!;
+          final packName = pack.pack.displayName ?? slug;
+          final firstSticker = pack.images.isEmpty
+              ? null
+              : pack.images.values.first;
+          final selected = selectedPackIndex == packIndex;
+
+          final Widget packIcon;
+          if (pack.pack.avatarUrl != null) {
+            packIcon = Avatar(
+              mxContent: pack.pack.avatarUrl,
+              name: packName,
+              client: room.client,
+              size: 40,
+            );
+          } else if (firstSticker != null) {
+            packIcon = ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: MxcImage(
+                uri: firstSticker.url,
+                fit: BoxFit.contain,
+                width: 40,
+                height: 40,
+                animated: false,
+                isThumbnail: true,
+              ),
+            );
+          } else {
+            packIcon = Avatar(
+              name: packName,
+              client: room.client,
+              size: 40,
+            );
+          }
+
+          return Tooltip(
+            message: packName,
+            child: _StickerPackNavigationButton(
+              selected: selected,
+              onTap: () => onScrollToPack(packIndex),
+              child: packIcon,
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _StickerPackNavigationButton extends StatelessWidget {
