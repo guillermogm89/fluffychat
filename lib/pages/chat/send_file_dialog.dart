@@ -10,6 +10,7 @@ import 'package:async/async.dart' show Result;
 import 'package:crop_image/crop_image.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:fluffychat/config/app_config.dart';
+import 'package:fluffychat/config/setting_keys.dart';
 import 'package:fluffychat/l10n/l10n.dart';
 import 'package:fluffychat/pages/chat/image_edit_geometry.dart';
 import 'package:fluffychat/pages/chat/trust_user_key_dialog.dart';
@@ -48,7 +49,7 @@ class SendFileDialog extends StatefulWidget {
 }
 
 class SendFileDialogState extends State<SendFileDialog> {
-  bool compress = true;
+  bool compress = AppSettings.sendFileCompression.value;
 
   /// Images smaller than 20kb don't need compression.
   static const int minSizeToCompress = 20 * 1000;
@@ -60,6 +61,11 @@ class SendFileDialogState extends State<SendFileDialog> {
   /// all reflect the edit result (always PNG). Keeping bytes + mimetype in one
   /// object avoids drift between the preview, the upload and the extension.
   late final List<XFile> _files = List<XFile>.of(widget.files);
+
+  Future<void> _setCompress(bool value) async {
+    setState(() => compress = value);
+    await AppSettings.sendFileCompression.setItem(value);
+  }
 
   Future<void> _editImage(int index) async {
     final bytes = await _files[index].readAsBytes();
@@ -412,14 +418,14 @@ class SendFileDialogState extends State<SendFileDialog> {
                           CupertinoSwitch(
                             value: compressionSupported && compress,
                             onChanged: compressionSupported
-                                ? (v) => setState(() => compress = v)
+                                ? _setCompress
                                 : null,
                           )
                         else
                           Switch.adaptive(
                             value: compressionSupported && compress,
                             onChanged: compressionSupported
-                                ? (v) => setState(() => compress = v)
+                                ? _setCompress
                                 : null,
                           ),
                         const SizedBox(width: 16),
