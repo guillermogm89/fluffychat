@@ -81,6 +81,8 @@ class ChatEmojiPicker extends StatelessWidget {
                         StickerPickerDialog(
                           room: controller.room,
                           onSelected: (sticker) async {
+                            final store = Matrix.of(context).store;
+                            final userId = controller.room.client.userID;
                             final proceed = await showTrustUserInRoomDialog(
                               context,
                               controller.room,
@@ -98,8 +100,8 @@ class ChatEmojiPicker extends StatelessWidget {
                             );
                             unawaited(
                               RecentStickersStore.add(
-                                Matrix.of(context).store,
-                                controller.room.client.userID,
+                                store,
+                                userId,
                                 sticker.url,
                               ),
                             );

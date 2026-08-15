@@ -45,19 +45,15 @@ class RecentStickersStore {
       final updated = update(read(store, userId), stickerUrl);
       await store.setStringList(key, updated);
     } catch (error, stackTrace) {
-      Logs().w(
-        'Unable to persist recent sticker',
-        error,
-        stackTrace,
-      );
+      Logs().w('Unable to persist recent sticker', error, stackTrace);
     }
   }
 
   static List<String> update(List<String> current, Uri stickerUrl) {
     final stickerUrlString = stickerUrl.toString();
-    final updated = _normalize(current)
-        .where((item) => item != stickerUrlString)
-        .toList();
+    final updated = _normalize(
+      current,
+    ).where((item) => item != stickerUrlString).toList();
 
     if (_isMxc(stickerUrlString)) {
       updated.insert(0, stickerUrlString);

@@ -88,9 +88,7 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
                               recentSticker.image.body ?? recentSticker.key,
                           child: InkWell(
                             radius: AppConfig.borderRadius,
-                            key: ValueKey(
-                              'recent_${recentSticker.image.url}',
-                            ),
+                            key: ValueKey('recent_${recentSticker.image.url}'),
                             onTap: () => _selectSticker(
                               recentSticker.image,
                               recentSticker.key,
@@ -219,10 +217,8 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
                             child: InkWell(
                               radius: AppConfig.borderRadius,
                               key: ValueKey(image.url.toString()),
-                              onTap: () => _selectSticker(
-                                image,
-                                imageKeys[imageIndex],
-                              ),
+                              onTap: () =>
+                                  _selectSticker(image, imageKeys[imageIndex]),
                               child: AbsorbPointer(
                                 absorbing: true,
                                 child: MxcImage(

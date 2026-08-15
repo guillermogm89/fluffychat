@@ -31,34 +31,22 @@ void main() {
         Uri.parse('mxc://example.org/a'),
       );
 
-      expect(
-        recent,
-        const [
-          'mxc://example.org/a',
-          'mxc://example.org/b',
-        ],
-      );
+      expect(recent, const ['mxc://example.org/a', 'mxc://example.org/b']);
     });
 
     test('normalizes invalid and duplicate stored entries', () {
-      final recent = RecentStickersStore.update(
-        const [
-          'not-an-mxc',
-          'mxc://example.org/a',
-          'mxc://example.org/a',
-          'mxc://example.org/b',
-        ],
-        Uri.parse('mxc://example.org/c'),
-      );
+      final recent = RecentStickersStore.update(const [
+        'not-an-mxc',
+        'mxc://example.org/a',
+        'mxc://example.org/a',
+        'mxc://example.org/b',
+      ], Uri.parse('mxc://example.org/c'));
 
-      expect(
-        recent,
-        const [
-          'mxc://example.org/c',
-          'mxc://example.org/a',
-          'mxc://example.org/b',
-        ],
-      );
+      expect(recent, const [
+        'mxc://example.org/c',
+        'mxc://example.org/a',
+        'mxc://example.org/b',
+      ]);
     });
 
     test('caps recent history at the configured limit', () {
