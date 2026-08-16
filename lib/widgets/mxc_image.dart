@@ -65,6 +65,7 @@ class _MxcImageState extends State<MxcImage> {
       _imageDataCaches[widget.cacheName ?? ''] ??= {};
 
   Uint8List? _imageDataNoCache;
+  EventStatus? _lastEventStatus;
 
   Uint8List? get _imageData => widget.cacheKey == null
       ? _imageDataNoCache
@@ -144,7 +145,23 @@ class _MxcImageState extends State<MxcImage> {
   @override
   void initState() {
     super.initState();
+    _lastEventStatus = widget.event?.status;
     WidgetsBinding.instance.addPostFrameCallback((_) => _tryLoad());
+  }
+
+  @override
+  void didUpdateWidget(covariant MxcImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final eventStatus = widget.event?.status;
+    final shouldRetryAfterSend =
+        _imageData == null &&
+        _lastEventStatus?.isSending == true &&
+        eventStatus?.isSent == true;
+    _lastEventStatus = eventStatus;
+
+    if (shouldRetryAfterSend) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _tryLoad());
+    }
   }
 
   @override
