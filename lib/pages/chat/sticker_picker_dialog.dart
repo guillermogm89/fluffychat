@@ -122,11 +122,7 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
     _ignoreActivePackUpdates = true;
     setState(() => _activePackIndex = -1);
     try {
-      await _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
+      _scrollController.jumpTo(0);
     } finally {
       _ignoreActivePackUpdates = false;
       _scheduleActivePackUpdate();
@@ -141,6 +137,7 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
     try {
       await _scrollController.scrollToIndex(
         index,
+        duration: const Duration(milliseconds: 1),
         preferPosition: AutoScrollPosition.begin,
       );
     } finally {
