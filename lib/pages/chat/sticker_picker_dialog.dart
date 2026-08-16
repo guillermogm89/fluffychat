@@ -37,6 +37,7 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
   final GlobalKey _scrollViewKey = GlobalKey();
   int? _activePackIndex;
   bool _activePackUpdateScheduled = false;
+  bool _ignoreActivePackUpdates = false;
 
   @override
   void initState() {
@@ -60,11 +61,15 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
   }
 
   void _scheduleActivePackUpdate() {
-    if (_activePackUpdateScheduled || !mounted) return;
+    if (_activePackUpdateScheduled || !mounted || _ignoreActivePackUpdates) {
+      return;
+    }
     _activePackUpdateScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _activePackUpdateScheduled = false;
-      if (mounted) _updateActivePackFromViewport();
+      if (mounted && !_ignoreActivePackUpdates) {
+        _updateActivePackFromViewport();
+      }
     });
   }
 
@@ -114,22 +119,34 @@ class StickerPickerDialogState extends State<StickerPickerDialog> {
   Future<void> _scrollToRecents() async {
     await _clearSearchBeforeNavigation();
     if (!_scrollController.hasClients) return;
+    _ignoreActivePackUpdates = true;
     setState(() => _activePackIndex = -1);
-    await _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOut,
-    );
+    try {
+      await _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    } finally {
+      _ignoreActivePackUpdates = false;
+      _scheduleActivePackUpdate();
+    }
   }
 
   Future<void> _scrollToPack(int index) async {
     await _clearSearchBeforeNavigation();
     if (!_scrollController.hasClients) return;
+    _ignoreActivePackUpdates = true;
     setState(() => _activePackIndex = index);
-    await _scrollController.scrollToIndex(
-      index,
-      preferPosition: AutoScrollPosition.begin,
-    );
+    try {
+      await _scrollController.scrollToIndex(
+        index,
+        preferPosition: AutoScrollPosition.begin,
+      );
+    } finally {
+      _ignoreActivePackUpdates = false;
+      _scheduleActivePackUpdate();
+    }
   }
 
   @override
